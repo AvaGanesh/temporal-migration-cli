@@ -136,6 +136,13 @@ function getAssignedIdentifierNode(topNode: Node): Identifier | undefined {
 
 const RELATIONAL_OPERATORS = new Set(['<', '>', '<=', '>=', '===', '==', '!==', '!=']);
 
+/** Collapse strict/loose equality to one tag shape; keep relational operators as-is. */
+function normalizeComparisonOperator(op: string): string {
+  if (op === '===' || op === '==') return '==';
+  if (op === '!==' || op === '!=') return '!=';
+  return op;
+}
+
 /** Lightweight, deterministic label for "the other side" of a comparison. */
 function describeExpr(node: Node): string {
   const text = node.getText();
@@ -149,7 +156,7 @@ function collectFlowFromUsageContext(node: Node, parent: Node, flows: FlowUse[])
     const op = parent.getOperatorToken().getText();
     if (RELATIONAL_OPERATORS.has(op)) {
       const other = parent.getLeft() === node ? parent.getRight() : parent.getLeft();
-      flows.push(`compared-to:${describeExpr(other)}`);
+      flows.push(`compared-to:${describeExpr(other)}:${normalizeComparisonOperator(op)}`);
     }
     return;
   }

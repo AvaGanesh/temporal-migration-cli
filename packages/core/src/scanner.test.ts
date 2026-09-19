@@ -49,12 +49,12 @@ describe('scanProject (Luxon fixtures)', () => {
       {
         chainText: 'DateTime.fromISO(dateStr)',
         assignedTo: 'parsed',
-        flowContext: ['compared-to:today'],
+        flowContext: ['compared-to:today:<'],
       },
       {
         chainText: 'DateTime.now()',
         assignedTo: 'today',
-        flowContext: ['compared-to:parsed'],
+        flowContext: ['compared-to:parsed:<'],
       },
     ]);
   });

@@ -44,3 +44,24 @@ export interface ScanSummary {
   byLibrary: Record<string, number>;
   byFile: Record<string, number>;
 }
+
+/**
+ * Module 2 — Classifier output types.
+ */
+export type TemporalType =
+  | 'PlainDate'
+  | 'PlainDateTime'
+  | 'PlainTime'
+  | 'ZonedDateTime'
+  | 'Instant'
+  | 'Duration';
+
+export type Confidence = 'high' | 'medium' | 'low';
+
+export interface Classification {
+  usageSiteId: string;
+  guess: TemporalType | 'AMBIGUOUS';
+  confidence: Confidence;
+  /** Human-readable, shown in the report for AMBIGUOUS cases. */
+  reason: string;
+}
