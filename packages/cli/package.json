@@ -1,0 +1,21 @@
+{
+  "name": "@temporal-migrate/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "temporal-migrate": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@temporal-migrate/core": "workspace:*",
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}
