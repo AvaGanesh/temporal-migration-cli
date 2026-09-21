@@ -1,7 +1,16 @@
 #!/usr/bin/env node
 import { writeFileSync } from 'node:fs';
 import { Command } from 'commander';
-import { scanProject, summarizeUsageSites, type ScanSummary } from '@temporal-migrate/core';
+import {
+  classifyUsageSites,
+  runRewriter,
+  scanProject,
+  summarizeUsageSites,
+  type RewriteResult,
+  type ScanSummary,
+  type UsageSite,
+} from '@temporal-migrate/core';
+import { luxonAdapter } from '@temporal-migrate/adapter-luxon';
 
 const program = new Command();
 
@@ -27,6 +36,66 @@ program
       console.log(`\nWrote ${usageSites.length} usage site(s) to ${opts.json}`);
     }
   });
+
+program
+  .command('plan')
+  .description(
+    'Scan, classify, and propose Temporal rewrites as diffs (dry-run, Luxon only; nothing is written to disk)',
+  )
+  .argument('[path]', 'path to scan', '.')
+  .option(
+    '--json <file>',
+    'write the full plan (diffs + manual-review reasons) as JSON to this file',
+  )
+  .action((targetPath: string, opts: { json?: string }) => {
+    const usageSites = scanProject({ rootDir: targetPath });
+    const classifications = classifyUsageSites(usageSites);
+    const result = runRewriter({
+      rootDir: targetPath,
+      sites: usageSites,
+      classifications,
+      adapter: luxonAdapter,
+    });
+
+    printPlan(usageSites, result);
+
+    if (opts.json) {
+      const byId = new Map(usageSites.map((s) => [s.id, s]));
+      const payload = {
+        fileDiffs: result.fileDiffs,
+        manualReview: result.manualReviewFlags.map((f) => ({
+          ...f,
+          file: byId.get(f.usageSiteId)?.file,
+          chainText: byId.get(f.usageSiteId)?.chainText,
+        })),
+      };
+      writeFileSync(opts.json, JSON.stringify(payload, null, 2), 'utf-8');
+      console.log(`\nWrote plan to ${opts.json}`);
+    }
+  });
+
+function printPlan(sites: UsageSite[], result: RewriteResult): void {
+  const rewrittenCount = result.fileDiffs.reduce((n, f) => n + f.rewrittenSiteIds.length, 0);
+  console.log(
+    `Rewritten: ${rewrittenCount} usage site(s) across ${result.fileDiffs.length} file(s)`,
+  );
+  console.log(`Needs manual review: ${result.manualReviewFlags.length} usage site(s)`);
+
+  for (const fileDiff of result.fileDiffs) {
+    console.log(`\n--- ${fileDiff.file} ---`);
+    console.log(fileDiff.diff);
+  }
+
+  if (result.manualReviewFlags.length > 0) {
+    const byId = new Map(sites.map((s) => [s.id, s]));
+    console.log('\nManual review needed:');
+    for (const flag of result.manualReviewFlags) {
+      const site = byId.get(flag.usageSiteId);
+      console.log(`  ${site?.file ?? '(unknown file)'} :: ${site?.chainText ?? flag.usageSiteId}`);
+      console.log(`    ${flag.reason}`);
+    }
+  }
+}
 
 function printSummary(summary: ScanSummary): void {
   console.log(`Total usage sites: ${summary.totalUsageSites}`);
