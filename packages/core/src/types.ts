@@ -60,3 +60,64 @@ export interface Classification {
   /** Human-readable, shown in the report for AMBIGUOUS cases. */
   reason: string;
 }
+
+/**
+ * Module 3 — Adapter System output types, and Module 4 — Rewriter output types.
+ */
+
+export interface RewriteRule {
+  type: 'rewrite';
+  usageSiteId: string;
+  newText: string;
+  /** Whether newText references the global `Temporal` object. */
+  requiresTemporalImport: boolean;
+}
+
+export interface ManualReviewFlag {
+  type: 'manual-review';
+  usageSiteId: string;
+  reason: string;
+}
+
+export type MappingResult = RewriteRule | ManualReviewFlag;
+
+/** One `.method(args)` or bare `.property` link in a call chain, in source order. */
+export interface CallChainLink {
+  method: string;
+  /** Raw source text of each call argument; empty for a bare property access. */
+  args: string[];
+}
+
+/** A library-agnostic, ts-morph-free view of a UsageSite's call chain. */
+export interface ParsedCallChain {
+  usageSiteId: string;
+  /** Text of the chain's root expression, e.g. 'DateTime', 'Interval', or a variable name. */
+  rootText: string;
+  links: CallChainLink[];
+}
+
+export interface LibraryAdapter {
+  libraryName: SourceLibrary;
+  /** True if the source library's methods mutate the receiver in place (e.g. Moment). */
+  mutatesInPlace: boolean;
+  formatTokenDialect: 'moment' | 'date-fns' | 'luxon' | 'none';
+  /**
+   * Maps one parsed call chain to its Temporal equivalent, given the
+   * Classifier's confident guess for it. The Rewriter never calls this for
+   * an AMBIGUOUS classification — those are filtered out first.
+   */
+  mapUsageSite(chain: ParsedCallChain, classification: Classification): MappingResult;
+}
+
+export interface FileDiff {
+  file: string;
+  /** Unified diff text. */
+  diff: string;
+  rewrittenSiteIds: string[];
+}
+
+export interface RewriteResult {
+  /** One entry per file that received at least one rewrite; files with zero rewrites are omitted. */
+  fileDiffs: FileDiff[];
+  manualReviewFlags: ManualReviewFlag[];
+}

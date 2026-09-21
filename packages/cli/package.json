@@ -11,6 +11,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@temporal-migrate/adapter-luxon": "workspace:*",
     "@temporal-migrate/core": "workspace:*",
     "commander": "^12.1.0"
   },
