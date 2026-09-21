@@ -49,12 +49,7 @@ export interface ScanSummary {
  * Module 2 — Classifier output types.
  */
 export type TemporalType =
-  | 'PlainDate'
-  | 'PlainDateTime'
-  | 'PlainTime'
-  | 'ZonedDateTime'
-  | 'Instant'
-  | 'Duration';
+  'PlainDate' | 'PlainDateTime' | 'PlainTime' | 'ZonedDateTime' | 'Instant' | 'Duration';
 
 export type Confidence = 'high' | 'medium' | 'low';
 

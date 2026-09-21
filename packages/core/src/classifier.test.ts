@@ -3,7 +3,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { scanProject } from './scanner.js';
 import { classifyUsageSites } from './classifier.js';
-import type { Classification, UsageSite } from './types.js';
+import type { Classification } from './types.js';
 
 const FIXTURES_DIR = path.resolve(
   fileURLToPath(new URL('.', import.meta.url)),

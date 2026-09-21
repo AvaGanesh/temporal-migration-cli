@@ -8,7 +8,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc -b",
-    "test": "vitest run"
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@temporal-migrate/core": "workspace:*",

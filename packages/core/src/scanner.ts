@@ -7,14 +7,7 @@
  * now, per the milestone's stated acceptance criteria.
  */
 import { createHash } from 'node:crypto';
-import {
-  Identifier,
-  ImportDeclaration,
-  Node,
-  Project,
-  SourceFile,
-  SyntaxKind,
-} from 'ts-morph';
+import { Identifier, ImportDeclaration, Node, Project, SourceFile, SyntaxKind } from 'ts-morph';
 import type { FlowUse, Range, SourceLibrary, UsageSite } from './types.js';
 
 interface LibraryMatcher {
@@ -24,9 +17,7 @@ interface LibraryMatcher {
 
 // Only Luxon is enabled for Milestone 1. Future milestones add matchers here
 // for 'moment', 'date-fns' (and 'date-fns/*'), and 'dayjs' (and 'dayjs/plugin/*').
-const LIBRARY_MATCHERS: LibraryMatcher[] = [
-  { library: 'luxon', test: (spec) => spec === 'luxon' },
-];
+const LIBRARY_MATCHERS: LibraryMatcher[] = [{ library: 'luxon', test: (spec) => spec === 'luxon' }];
 
 function matchLibrary(moduleSpecifier: string): SourceLibrary | undefined {
   return LIBRARY_MATCHERS.find((m) => m.test(moduleSpecifier))?.library;
@@ -160,7 +151,7 @@ function collectFlowFromUsageContext(node: Node, parent: Node, flows: FlowUse[])
     }
     return;
   }
-  if (Node.isCallExpression(parent) && parent.getArguments().includes(node as any)) {
+  if (Node.isCallExpression(parent) && parent.getArguments().includes(node)) {
     const calleeText = parent.getExpression().getText();
     flows.push(`passed-to:${calleeText}`);
     if (calleeText === 'JSON.stringify') flows.push('serialized-to-json');
@@ -226,7 +217,10 @@ function analyzeFlow(topNode: Node, sourceFile: SourceFile): FlowUse[] {
 }
 
 function hashId(file: string, range: Range): string {
-  return createHash('sha1').update(`${file}:${range.start}-${range.end}`).digest('hex').slice(0, 12);
+  return createHash('sha1')
+    .update(`${file}:${range.start}-${range.end}`)
+    .digest('hex')
+    .slice(0, 12);
 }
 
 export function scanSourceFile(sourceFile: SourceFile): UsageSite[] {
@@ -321,6 +315,8 @@ export function scanProject(options: ScanProjectOptions): UsageSite[] {
   for (const sourceFile of project.getSourceFiles()) {
     sites.push(...scanSourceFile(sourceFile));
   }
-  sites.sort((a, b) => (a.file === b.file ? a.range.start - b.range.start : a.file.localeCompare(b.file)));
+  sites.sort((a, b) =>
+    a.file === b.file ? a.range.start - b.range.start : a.file.localeCompare(b.file),
+  );
   return sites;
 }

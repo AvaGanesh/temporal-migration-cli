@@ -34,7 +34,9 @@ const DURATION_PATTERN = /\.diff\(|\bDuration\.|\bduration\(/;
 const INSTANT_ORIGIN_PATTERN = /\bDate\.now\(\)|\.valueOf\(\)|\.toMillis\(\)|^\+new Date\(/;
 
 function hasTimezoneSignal(chainText: string, flowContext: FlowUse[]): boolean {
-  return flowContext.includes('timezone-arg:present') || /\.setZone\(|\.tz\(|\.toUTC\(/.test(chainText);
+  return (
+    flowContext.includes('timezone-arg:present') || /\.setZone\(|\.tz\(|\.toUTC\(/.test(chainText)
+  );
 }
 
 function chainedCallFieldNames(flowContext: FlowUse[]): string[] {
@@ -56,7 +58,9 @@ function chainedCallFieldNames(flowContext: FlowUse[]): string[] {
  * the (different) type of its result.
  */
 function accessesField(chainText: string, flowContext: FlowUse[], names: Set<string>): boolean {
-  const directMatch = chainText.match(names === CALENDAR_FIELD_NAMES ? CALENDAR_FIELD_PATTERN : TIME_FIELD_PATTERN);
+  const directMatch = chainText.match(
+    names === CALENDAR_FIELD_NAMES ? CALENDAR_FIELD_PATTERN : TIME_FIELD_PATTERN,
+  );
   if (directMatch && names.has(directMatch[1])) return true;
   return chainedCallFieldNames(flowContext).some((name) => names.has(name));
 }
@@ -92,7 +96,10 @@ function classifyUsageSite(site: UsageSite): Classification {
   const calendarAccess = accessesField(chainText, flowContext, CALENDAR_FIELD_NAMES);
   const timeAccess = accessesField(chainText, flowContext, TIME_FIELD_NAMES);
 
-  if (INSTANT_ORIGIN_PATTERN.test(chainText) || (comparedWithRelationalOperator(flowContext) && !calendarAccess && !timeAccess)) {
+  if (
+    INSTANT_ORIGIN_PATTERN.test(chainText) ||
+    (comparedWithRelationalOperator(flowContext) && !calendarAccess && !timeAccess)
+  ) {
     const reason = INSTANT_ORIGIN_PATTERN.test(chainText)
       ? 'chain originates from a timestamp-producing call (Date.now()/valueOf()/toMillis())'
       : 'value is compared with a relational operator (</>)  against another date-like value, with no calendar/time-field access';

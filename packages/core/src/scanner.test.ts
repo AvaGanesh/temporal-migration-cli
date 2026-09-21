@@ -21,7 +21,7 @@ describe('scanProject (Luxon fixtures)', () => {
   it('finds exactly one usage site per file for the simple cases, in source order', () => {
     expect(sitesForFile(sites, '01-basic-now.ts')).toEqual([
       {
-        chainText: "DateTime.now().toISODate()",
+        chainText: 'DateTime.now().toISODate()',
         assignedTo: undefined,
         flowContext: ['returned'],
       },

@@ -12,7 +12,9 @@ program
 
 program
   .command('scan')
-  .description('Scan a codebase for library usage sites (Module 1 only, no classification or rewriting)')
+  .description(
+    'Scan a codebase for library usage sites (Module 1 only, no classification or rewriting)',
+  )
   .argument('[path]', 'path to scan', '.')
   .option('--json <file>', 'write the UsageSite[] JSON report to this file')
   .action((targetPath: string, opts: { json?: string }) => {
